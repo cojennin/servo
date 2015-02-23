@@ -205,6 +205,7 @@ pub trait AttrHelpers<'a> {
     fn set_value(self, set_type: AttrSettingType, value: AttrValue, owner: JSRef<Element>);
     fn value(self) -> Ref<'a, AttrValue>;
     fn local_name(self) -> &'a Atom;
+    fn prefix(self) -> &'a Option<DOMString>;
     fn summarize(self) -> AttrInfo;
 }
 
@@ -234,6 +235,10 @@ impl<'a> AttrHelpers<'a> for JSRef<'a, Attr> {
 
     fn local_name(self) -> &'a Atom {
         &self.extended_deref().local_name
+    }
+
+    fn prefix(self) -> &'a Option<DOMString> {
+        &self.extended_deref().prefix
     }
 
     fn summarize(self) -> AttrInfo {

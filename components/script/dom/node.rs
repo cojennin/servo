@@ -67,7 +67,8 @@ use std::mem;
 use std::sync::Arc;
 use uuid;
 use string_cache::QualName;
-
+use string_cache::Namespace;
+use string_cache::atom::Atom;
 //
 // The basic Node structure
 //
@@ -2184,11 +2185,33 @@ impl<'a> NodeMethods for JSRef<'a, Node> {
     }
 
     // http://dom.spec.whatwg.org/#dom-node-lookupprefix
-    fn LookupPrefix(self, _prefix: Option<DOMString>) -> Option<DOMString> {
-        // FIXME (#1826) implement.
-        None
-    }
+    fn LookupPrefix(self, _namespace: Option<DOMString>) -> Option<DOMString> {
+        let name: Namespace = Namespace(Atom::from_slice(_namespace.unwrap().as_slice()));
 
+        for ancestor in self.inclusive_ancestors() {
+            let optional_element: Option<JSRef<Element>> = ElementCast::to_ref(ancestor);
+            
+            if optional_element.is_none() { continue }
+
+            let element: JSRef<Element> = optional_element.unwrap();
+
+            if *element.namespace() == name {
+                return element.prefix().clone()
+            }
+
+            for attribute in element.attrs().iter().map(|attr| attr.root()) {
+                let prefix = attribute.r().prefix().clone();
+
+                if prefix.is_none() { continue } 
+                if prefix.unwrap() != "xmlns" || Namespace(Atom::from_slice(attribute.r().value().as_slice())) != name { continue }
+
+                return Some(String::from_str(attribute.r().local_name().clone().as_slice()))
+            }
+        }
+
+        None 
+    }
+    
     // http://dom.spec.whatwg.org/#dom-node-lookupnamespaceuri
     fn LookupNamespaceURI(self, _namespace: Option<DOMString>) -> Option<DOMString> {
         // FIXME (#1826) implement.

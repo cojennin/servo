@@ -1,0 +1,14 @@
+<html>
+	<head >
+		<script src="harness.js"></script>
+	</head>
+	<body>
+		<div id="not-foo">
+			<div id="foo"></div>
+		</div>
+		<script>
+			let prefixT = document.getElementById("foo");
+			console.log(prefixT.lookupPrefix("http://www.w3.org/TR/html4/"));			
+		</script>
+	</body>
+</html>
